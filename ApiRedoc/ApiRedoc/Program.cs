@@ -1,9 +1,7 @@
-﻿using ApiRedoc;
-using ApiRedoc.Controllers;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
-using ApiRedoc.Middleware;
+using ApiRedoc.Filters;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,7 +13,7 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("swagger", new OpenApiInfo { Title = "Swagger API", Version = "v1" });
     options.SwaggerDoc("redoc", new OpenApiInfo { Title = "Redoc API", Version = "v1" });
 
-    // Filtrar controladores por grupo para Swagger
+    // Each controller declares its document with [ApiExplorerSettings(GroupName = "swagger" | "redoc")]
     options.DocInclusionPredicate((docName, apiDesc) =>
     {
         if (!apiDesc.TryGetMethodInfo(out var methodInfo)) return false;
@@ -35,15 +33,6 @@ builder.Services.AddSwaggerGen(options =>
     options.EnableAnnotations();
 });
 
-builder.Services.AddSwaggerDocument(config =>
-{
-    config.PostProcess = document =>
-    {
-        document.Info.Title = "Todo API";
-        document.Info.Description = "A simple CRUD API for managing tasks.";
-    };
-});
-
 var app = builder.Build();
 app.UseStaticFiles();
 
@@ -54,7 +43,6 @@ app.UseSwaggerUI(c =>
     c.InjectStylesheet("/SwaggerDark.css");
 });
 
-app.UseOpenApi();
 app.UseSwagger();
 //Activate ReDoc
 app.UseReDoc(options =>

@@ -1,4 +1,4 @@
-﻿using ApiRedoc.ViewModels.Request;
+using ApiRedoc.ViewModels.Request;
 using ApiRedoc.ViewModels.Response;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -20,23 +20,23 @@ namespace ApiRedoc.Controllers
         [SwaggerResponse(404, "Tasks Not Found")]
         [SwaggerResponse(500, "Internal Error")]
         [HttpGet("tasks")]
-        public ActionResult<IEnumerable<TodoItemRequestDocumentation>> Get()
+        public ActionResult<IEnumerable<TodoItemResponseDocumentation>> Get()
         {
-            var example = new List<TodoItemRequestDocumentation>()
+            var example = new List<TodoItemResponseDocumentation>()
             {
-                new TodoItemRequestDocumentation()
+                new TodoItemResponseDocumentation()
                 {
                     Id = 1,
                     Name = "Task Test Data",
                     Completed = false
                 },
-                new TodoItemRequestDocumentation()
+                new TodoItemResponseDocumentation()
                 {
                     Id = 2,
                     Name = "Task Test Data",
                     Completed = true
                 },
-                new TodoItemRequestDocumentation()
+                new TodoItemResponseDocumentation()
                 {
                     Id = 3,
                     Name = "Task Test Data",
@@ -52,9 +52,9 @@ namespace ApiRedoc.Controllers
             OperationId = "GetById",
             Tags = new[] { "ToDoRedoc" })]
         [HttpGet("{id}")]
-        public ActionResult<TodoItemRequestDocumentation> Get(int id)
+        public ActionResult<TodoItemResponseDocumentation> Get(int id)
         {
-            var example = new TodoItemRequestDocumentation()
+            var example = new TodoItemResponseDocumentation()
             {
                 Id = id,
                 Name = "Task Test Data",
@@ -65,9 +65,8 @@ namespace ApiRedoc.Controllers
         }
 
         [SwaggerOperation(
-            Summary = "Add Specific Task by Id",
-            Description = "This endpoint will return all tasks, regardless of whether they are complete or not, " +
-                          "and will validate that the new task name is not registered.",
+            Summary = "Create a Task",
+            Description = "This endpoint will create a new task and will validate that the task name is not already registered.",
             OperationId = "Post",
             Tags = new[] { "ToDoRedoc" })]
         [HttpPost]

@@ -1,4 +1,4 @@
-﻿using ApiRedoc.ViewModels.Request;
+using ApiRedoc.ViewModels.Request;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiRedoc.Controllers;
@@ -9,7 +9,8 @@ namespace ApiRedoc.Controllers;
 public class TodoController : ControllerBase
 {
     private static readonly List<TodoItemRequest> todos = new List<TodoItemRequest>();
-    
+    private static int nextId = 1;
+
     [HttpGet]
     public ActionResult<IEnumerable<TodoItemRequest>> Get()
     {
@@ -20,7 +21,7 @@ public class TodoController : ControllerBase
     public ActionResult<TodoItemRequest> Get(int id)
     {
         var todo = todos.Find(t => t.Id == id);
-        
+
         if (todo == null)
             return NotFound();
 
@@ -30,12 +31,11 @@ public class TodoController : ControllerBase
     [HttpPost]
     public ActionResult Post([FromBody] TodoItemRequest todo)
     {
-        var todoExist = todos.Find(t => t.Name == todo.Name);
-
-        if (todoExist != null)
+        if (todos.Exists(t => t.Name == todo.Name))
             return Conflict($"Already exists the Todo: { todo.Name }");
-        
-        todo.Id = todos.Count + 1;
+
+        // A counter instead of todos.Count + 1, so ids are never reused after a delete.
+        todo.Id = nextId++;
         todos.Add(todo);
 
         return CreatedAtAction(nameof(Get), new { id = todo.Id }, todo);
@@ -45,17 +45,16 @@ public class TodoController : ControllerBase
     public ActionResult Put(int id, [FromBody] TodoItemRequest updatedTodo)
     {
         var todo = todos.Find(t => t.Id == id);
-        
+
         if (todo == null)
             return NotFound();
 
+        // Check the name against the other tasks before changing anything.
+        if (todos.Exists(t => t.Id != id && t.Name == updatedTodo.Name))
+            return Conflict($"Already exists the Todo: { updatedTodo.Name }");
+
         todo.Name = updatedTodo.Name;
         todo.Completed = updatedTodo.Completed;
-        
-        var todoExist = todos.Find(t => t.Name == todo.Name);
-
-        if (todoExist != null)
-            return Conflict($"Already exists the Todo: { todo.Name }");
 
         return NoContent();
     }
@@ -64,9 +63,10 @@ public class TodoController : ControllerBase
     public ActionResult Delete(int id)
     {
         var todo = todos.Find(t => t.Id == id);
-        
+
         if (todo == null)
             return NotFound();
+
         todos.Remove(todo);
 
         return NoContent();
